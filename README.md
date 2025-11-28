@@ -12,11 +12,11 @@ A Node.js implementation for GetStream Chat API that demonstrates user creation,
 ## Configuration
 
 The application uses the following GetStream credentials (configured in `.env`):
-
+<!-- 
 - **App ID**: 1281034
 - **API Key**: enq5hnqqhduv
 - **API Secret**: 63pgb7rnpnpt83kbn4xm5txmnwxauq27734w24ctd978jvup3n9yyjfcyzv4baz8
-- **Channel Type**: messaging
+- **Channel Type**: messaging -->
 
 ## Installation
 
