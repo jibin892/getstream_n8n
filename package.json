@@ -1,0 +1,17 @@
+{
+  "name": "getstream-chat-setup",
+  "version": "1.0.0",
+  "description": "GetStream Chat implementation with user creation and messaging",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["getstream", "chat", "messaging"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "stream-chat": "^8.40.0",
+    "dotenv": "^16.4.5"
+  }
+}
