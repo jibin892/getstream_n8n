@@ -19,6 +19,8 @@ const serverClient = StreamChat.getInstance(apiKey, apiSecret);
  */
 async function createOrUpdateUser(userId, userName,deviceID,platform) {
   try {
+
+    serverClient
     // Check if user already exists
     const query = { id: { $eq: userId } };
     const res = await serverClient.queryUsers(query, { limit: 1 });
@@ -131,8 +133,9 @@ function generateUserToken(userId) {
  * @param {string} messageText - Message content
  * @returns {Promise<Object>} Message response
  */
-async function sendMessageToChannel(channelId,userName, userId, messageText) {
+async function sendMessageToChannel(channelId, userId,userName, messageText) {
   try {
+
     // Get or create the channel
     const channel = serverClient.channel(channelType, channelId, {
       name: `Weight Loss ${userName}`,
@@ -148,11 +151,12 @@ async function sendMessageToChannel(channelId,userName, userId, messageText) {
       await channel.create({ id: channelId });
       console.log(`✅ Channel created: ${channelId}`);
     }
+        const doctorName = 'Doctor Sami';
 
     // Send message
     const response = await channel.sendMessage({
       text: messageText,
-      user_id: userId,
+      user:{id:userId,name:doctorName}
     });
 
     console.log(`✅ Message sent to channel "${channelId}"`);
@@ -165,6 +169,44 @@ async function sendMessageToChannel(channelId,userName, userId, messageText) {
     throw error;
   }
 }
+
+
+async function sendUserMessageToChannel(channelId, userId,userName, messageText) {
+  try {
+
+    // Get or create the channel
+    const channel = serverClient.channel(channelType, channelId, {
+      name: `Weight Loss ${userName}`,
+      created_by_id: userId,
+    });
+
+    // Ensure the channel exists (query will throw if missing)
+    try {
+      await channel.query();
+      console.log(`ℹ️ Channel exists: ${channelId}`);
+    } catch (err) {
+      // Create channel if it doesn't exist
+      await channel.create({ id: channelId });
+      console.log(`✅ Channel created: ${channelId}`);
+    }
+ 
+    // Send message
+    const response = await channel.sendMessage({
+      text: messageText,
+      user:{id:userId,name:userName}
+    });
+
+    console.log(`✅ Message sent to channel "${channelId}"`);
+    console.log(`Message: "${messageText}"`);
+    console.log(`Message ID: ${response.message.id}`);
+    
+    return response;
+  } catch (error) {
+    console.error('❌ Error sending message:', error.message);
+    throw error;
+  }
+}
+
 
 /**
  * Main function to demonstrate the complete flow
@@ -222,18 +264,67 @@ async function main(userId = 'D0Vf1d6AaRPSGqITkVeL44aQAuF3', message = 'Hello fr
   }
 }
 
+
+// Function to delete all channels
+async function deleteAllChannels() {
+  try {
+    // Query all channels
+    const filter = {}; // Empty filter gets all channels
+    const sort = [{ last_message_at: -1 }];
+    const options = { limit: 30 };
+
+    let hasMore = true;
+    let deletedCount = 0;
+
+    while (hasMore) {
+      // Query channels
+      const channels = await serverClient.queryChannels(filter, sort, options);
+ console.log(`Total channels length: ${channels.length}`);
+
+         for (const channel1 of channels) {
+        console.log(`channel: ${channel1.type}:${channel1.id}`);
+
+
+         }
+      if (channels.length === 0) {
+        hasMore = false;
+        break;
+      }
+
+      // Delete each channel
+      for (const channel of channels) {
+        await channel.delete();
+        console.log(`Deleted channel: ${channel.type}:${channel.id}`);
+        deletedCount++;
+      }
+
+      // Check if there are more channels
+      hasMore = channels.length === options.limit;
+      
+      // Optional: Add a small delay to avoid rate limits
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    console.log(`Total channels deleted: ${deletedCount}`);
+  } catch (error) {
+    console.error('Error deleting channels:', error);
+  }
+}
+
+ 
 // Run the main function with CLI args or defaults.
 // Usage: `node index.js <targetUserId> "<message>"`
-const cliUserId = 'D0Vf1d6AaRPSGqITkVeL44aQAuF10';
+const cliUserId = 'D0Vf1d6AaRPSGqITkVeL44aQAuF14';
 const cliMessage = 'Hai Brother, This is Jibin from Dardoc';
 const deviceID = "di0Uik7vTriJ2ZFHfMsN17:APA91bFrvrG85LtyMwa_9E_hIqOxO0k1acc1tVAa379HsEwv-3Tl0QIzw-SHeYQjTuc2w3Nc7js6QqgOu2tUIDfA7IZEGX-bFDg43iNyPR-IQHqX5nirjmM"
 const platform = "Android"
-main(cliUserId, cliMessage,deviceID,"Jibin C",platform);
+// main(cliUserId, cliMessage,deviceID,"Jibin C",platform);
+main()
 
 
-// const cliUserIdiOS = 'D0Vf1d6AaRPSGqITkVeL44aQAuF10';
-// const deviceIDIos = "di0Uik7vTriJ2ZFHfMsN17:APA91bFrvrG85LtyMwa_9E_hIqOxO0k1acc1tVAa379HsEwv-3Tl0QIzw-SHeYQjTuc2w3Nc7js6QqgOu2tUIDfA7IZEGX-bFDg43iNyPR-IQHqX5nirjmM"
-// main(cliUserIdiOS, cliMessage,deviceIDIos,"Jibin C","iOS");
+  // const cliUserIdiOS = 'QxmOgt9HHvesoPqIEWw9NkB9YUG3';
+  // const deviceIDIos = "4591512e898ff5f7409fbf527f757db2d78f082271c07f844a5fb3f4a2f06863"
+  //  main(cliUserIdiOS, cliMessage,deviceIDIos,"Adi","iOS");
 
 
 // Export functions for use in other files
